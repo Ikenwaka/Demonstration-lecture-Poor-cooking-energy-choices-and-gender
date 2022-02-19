@@ -104,6 +104,11 @@ summary(cook_data$Poverty.Dummy)
 summary(cook_data$ed_hd_dum)
 summary(cook_data$HHsize)
 
+class(cook_data$Age_hd)
+class(cook_data$cook_fl.Dummy)
+
+#Convert Age to numeric
+cook_data$Age_hd <- as.numeric(cook_data$Age_hd)
 # save temp file
 write.csv(cook_data, paste0(data_out, "ch11_cook_energy.csv"), row.names = F)
 
@@ -157,7 +162,7 @@ cook_data<-cook_data %>%
 g2a<-ggplot(data = cook_data, aes(x=HHsize, y=cook_fl.Dummy)) +
   #  geom_point(aes(x = eduyears, y = stayshealthy, size=weight), color=color[1], shape = 16, alpha=0.8, show.legend=F, na.rm=TRUE)  +
   geom_smooth_da(method="loess", color=color[1]) +
-  scale_x_continuous(expand = c(0.01,0.01), limits = c(0,25), breaks = seq(0,25,4))+
+  scale_x_continuous(expand = c(0.01,0.01), limits = c(1,35), breaks = seq(1,35,5))+
   scale_y_continuous(expand = c(0.01,0.01), limits = c(0,1), breaks = seq(0,1,0.1)) +
   labs(x = "Family size",y = "Probability of using poor cooking energy") +
   #labs(x = "Education (years of schooling)",y = "Probability of staying healthy ") +
@@ -168,7 +173,7 @@ save_fig("Cook_fuel and HHsize", output, "small")
 
 g2b<-ggplot(data = cook_data, aes(x=Age_hd, y=cook_fl.Dummy)) +
   geom_smooth_da(method="loess", color=color[1]) +
-  scale_x_continuous(expand = c(0.01,0.01), limits = c(1,10), breaks = seq(1,10,1))+
+  scale_x_continuous(expand = c(0.01,0.01), limits = c(15, 75), breaks = seq(10,75,10))+
   scale_y_continuous(expand = c(0.01,0.01), limits = c(0,1), breaks = seq(0,1,0.1)) +
   labs(x = "Age of family head)",y = "Probability of using poor cooking energy ") +
   theme_bg()
