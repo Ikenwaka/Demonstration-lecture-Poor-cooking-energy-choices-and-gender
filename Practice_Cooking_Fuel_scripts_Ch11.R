@@ -70,6 +70,7 @@ head(cook_data, n=5)
 sapply(cook_data, class)
 
 #Key variables of interest: cook_fl; gender_hd, hhsize, wealth and others are transformed to numeric variables
+cook_data$Age_hd <- as.numeric(as.character(cook_data$Age_hd))
 
 table(cook_data$gender_hd) 
 # Gender dummy of family heads such that Female-heads =1 and Male-heads=0
@@ -108,6 +109,7 @@ class(cook_data$Age_hd)
 class(cook_data$cook_fl.Dummy)
 
 #Convert Age to numeric
+
 cook_data$Age_hd <- as.numeric(cook_data$Age_hd)
 # save temp file
 write.csv(cook_data, paste0(data_out, "ch11_cook_energy.csv"), row.names = F)
@@ -116,9 +118,9 @@ write.csv(cook_data, paste0(data_out, "ch11_cook_energy.csv"), row.names = F)
 # 2. PART - SIMPLE LPM MODELS
 ################################################################################
 
-# Linear probability models of good health at endline and smoking
+# Linear probability models of poor cooking fuel choices and gender 
 
-# (1) current smoker on RHS
+# (1) poor cookig fuel choices  on RHS
 lpm1 <- lm(cook_fl.Dummy ~ Female.Dummy, data=cook_data)
 summary(lpm1, vcov=sandwich)
 
@@ -144,10 +146,10 @@ g1<-ggplot(data = cook_data, label=cook_fl.Dummy) +
   scale_x_continuous(limits = c(0,1), breaks = seq(0,1,1))+
   theme_bg() 
 g1
-#save_fig("health_smoking_lpm_R", output, "small")FIXME
+
 save_fig("Cooking_fuel_Gender1", output, "small")
 
-# (2) current smoker and ever smoked on RHS
+# (2) poor fuel choices on RHS and gender dummy with 
 lpm2 <- lm(cook_fl.Dummy ~ Female.Dummy + as.factor(ed_hd), data=cook_data)
 summary(lpm2, vcov=sandwich)
 
@@ -160,16 +162,15 @@ cook_data<-cook_data %>%
   mutate(weight = n()/100)
 
 g2a<-ggplot(data = cook_data, aes(x=HHsize, y=cook_fl.Dummy)) +
-  #  geom_point(aes(x = eduyears, y = stayshealthy, size=weight), color=color[1], shape = 16, alpha=0.8, show.legend=F, na.rm=TRUE)  +
+  #  geom_point(aes(x = family size, y = poor cooking fuel choices, size=weight), color=color[1], shape = 16, alpha=0.8, show.legend=F, na.rm=TRUE)  +
   geom_smooth_da(method="loess", color=color[1]) +
-  scale_x_continuous(expand = c(0.01,0.01), limits = c(1,35), breaks = seq(1,35,5))+
+  scale_x_continuous(expand = c(0.01,0.01), limits = c(1,35), breaks = seq(1,45,5))+
   scale_y_continuous(expand = c(0.01,0.01), limits = c(0,1), breaks = seq(0,1,0.1)) +
   labs(x = "Family size",y = "Probability of using poor cooking energy") +
-  #labs(x = "Education (years of schooling)",y = "Probability of staying healthy ") +
-  theme_bg() 
+   theme_bg() 
 g2a
-#save_fig("health_edu_R", output, "small") 
 save_fig("Cook_fuel and HHsize", output, "small")
+
 
 g2b<-ggplot(data = cook_data, aes(x=Age_hd, y=cook_fl.Dummy)) +
   geom_smooth_da(method="loess", color=color[1]) +
@@ -178,7 +179,6 @@ g2b<-ggplot(data = cook_data, aes(x=Age_hd, y=cook_fl.Dummy)) +
   labs(x = "Age of family head)",y = "Probability of using poor cooking energy ") +
   theme_bg()
 g2b
-#save_fig("health_income_R", output, "small") FIXME
 save_fig("cook_fuel_age", output, "small")
 
 
@@ -202,7 +202,6 @@ share_pred_lpm[,.(mean=mean(cook_data$pred_lpm), sd = sd(cook_data$pred_lpm), mi
                   q25 = quantile(cook_data$pred_lpm, probs = c(0.25)), q50 = quantile(cook_data$pred_lpm, probs = c(0.5)), 
                   q75 = quantile(cook_data$pred_lpm, probs = c(0.75)),.N)]
 
-rm(share_pred_lpm)
 
 g3<-ggplot(data=cook_data, aes(x=pred_lpm)) +
   geom_histogram_da(type='percent', binwidth=0.02) +
@@ -309,12 +308,10 @@ msummary(list(lpm, logit, probit),
          gof_omit = 'DF|Deviance|Log.Lik.|F|R2 Adj.|AIC|BIC',
          stars=c('*' = .05, '**' = .01),
          coef_rename = cm,
-         coef_omit = 'as.factor(country)*'
          output = paste(output,"ch09_reg2-R.tex",sep="")
 )
 
 
-# FIXME: looks weird
 g5<-ggplot(data = cook_data) +
   geom_point(aes(x=pred_lpm, y=pred_probit, color="Probit"), size=0.4,  shape=16) +
   geom_point(aes(x=pred_lpm, y=pred_logit,  color="Logit"), size=0.4,  shape=16) +
@@ -337,8 +334,6 @@ stargazer(lpm, logit, probit, digits=3, out=paste(output,"T11_reg4_R.html",sep="
 
 stargazer(list(lpm, logit, logit_marg, probit, probit_marg), digits=3, out=paste(output,"T11_reg5_R.html",sep=""))
 
-# FIXME:  save marginals 
-# if mfx - could be useful https://github.com/tidymodels/broom/pull/756
 
 ################################################################################
 # 5. PART - GOF
@@ -346,9 +341,8 @@ stargazer(list(lpm, logit, logit_marg, probit, probit_marg), digits=3, out=paste
 # GOODNESS OF FIT
 
 # re-estimate the simplest lpm
-lpmbase <- lm(cook_fl.Dummy ~ Gender.Dummy, data=cook_data)
+lpmbase <- lm(cook_fl.Dummy ~ Female.Dummy, data=cook_data)
 cook_data$pred_lpmbase <- predict(lpmbase) 
-print(pred_lpmbase)
 
 
 # DISTRIBUTION OF PREDICTED PROBABILITIES BY OUTCOME
@@ -397,7 +391,6 @@ save_fig("ch11-figure-7b-pred-hist-byoutcome-lpm", output, "small")
 dt_pred = data.table(cook_data)
 dt_pred[,list(mean_lpmbase=mean(pred_lpmbase), mean_lpm=mean(pred_lpm), mean_logit=mean(pred_logit), mean_probit=mean(pred_probit)),by=list(cook_fl.Dummy)]
 dt_pred[,list(median_lpmbase=median(pred_lpmbase), median_lpm=median(pred_lpm), median_logit=median(pred_logit), median_probit=median(pred_probit)),by=list(cook_fl.Dummy)]
-
 
 
 
