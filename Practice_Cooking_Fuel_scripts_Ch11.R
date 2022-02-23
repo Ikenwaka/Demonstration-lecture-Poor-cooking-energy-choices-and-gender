@@ -300,6 +300,10 @@ msummary(list(lpm, logit, logit_marg, probit, probit_marg),
          #output = paste(output,"ch09_reg2-R.tex",sep="")
 )
 
+install.packages("flextable")
+library(flextable)
+
+
 # adding pseudo R2 (not work for mfx)
 glance_custom.glm <- function(x) data.frame(`PseudoR2` = pR2(x)["McFadden"])
 cm <- c('(Intercept)' = 'Constant')
