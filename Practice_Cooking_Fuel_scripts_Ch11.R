@@ -312,7 +312,7 @@ msummary(list(lpm, logit, probit),
          gof_omit = 'DF|Deviance|Log.Lik.|F|R2 Adj.|AIC|BIC',
          stars=c('*' = .05, '**' = .01),
          coef_rename = cm,
-         output = paste(output,"ch09_reg2-R.tex",sep="")
+         output = paste(output,"ch09_reg2-R.docx",sep="")
 )
 
 
